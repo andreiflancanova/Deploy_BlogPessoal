@@ -22,16 +22,16 @@ import com.generation.blogpessoal.repository.TemaRepository;
 
 @RestController
 @CrossOrigin(origins = "*",allowedHeaders = "*")
-@RequestMapping("/tema")
+@RequestMapping("/subject")
 
 public class TemaController {
 
 	@Autowired
-	private TemaRepository repository;
+	private TemaRepository temaRepository;
 	
 	@GetMapping
 	public ResponseEntity<List<Tema>> getAll(){
-		return ResponseEntity.ok(repository.findAll());
+		return ResponseEntity.ok(temaRepository.findAll());
 	}
 	
 	//Criar uma sub-rota
@@ -48,7 +48,7 @@ public class TemaController {
 		 	2) Usa o findById para trazer a entrada do BD correspondente
 		 	a este ID;
 		 */
-		return repository.findById(id)
+		return temaRepository.findById(id)
 				//Método Option: Map e Função Lambda: resposta
 				//Retorna um objeto do tipo Tema e renderiza na Body
 				.map(resposta -> ResponseEntity.ok(resposta))
@@ -60,36 +60,51 @@ public class TemaController {
 	*/
 	}
 	
-	//Criar uma sub-rota para busca pelo nome
-		@GetMapping ("/nome/{nome}")
+	//Criar uma sub-rota para busca pela descrição
+		@GetMapping ("/description/{descricao}")
 		/*
 		 	Quando usamos a anotação @PathVariable, estamos fazendo ela pegar o valor
 		 	diretamente pela URL.
 		*/
 		
-		public ResponseEntity<List<Tema>> getByName(@PathVariable String nome){
+		public ResponseEntity<List<Tema>> getByDescription(@PathVariable String descricao){
 			/*
 			 	Este método faz o seguinte:
 			 	1) Se a URL no Front-End (Postman) contiver o /nome, acessa ele;
 			 	2) Usa o findAllByDescricao para trazer a entrada do BD correspondente
 			 	a este ID;
 			 */
-			return ResponseEntity.ok(repository.findAllByDescricaoContainingIgnoreCase(nome));
+			return ResponseEntity.ok(temaRepository.findAllByDescricaoContainingIgnoreCase(descricao));
 		}
 		
 		@PostMapping
 		public ResponseEntity<Tema> adicionaTema(@Valid @RequestBody Tema tema){
-			return ResponseEntity.status(HttpStatus.CREATED).body(repository.save(tema));
+			return ResponseEntity.status(HttpStatus.CREATED).body(temaRepository.save(tema));
 		}
 		
-		@PutMapping
-		public ResponseEntity<Tema> atualizaTema(@Valid @RequestBody Tema tema){
-			return ResponseEntity.ok(repository.save(tema));
+		@PutMapping ("/{id}")
+		public ResponseEntity<Tema> atualizaTema(@PathVariable Long id, @Valid @RequestBody  Tema tema){
+			/*
+		 	Quando se fala de Post, temos, obrigatoriamente, que enviar
+		 	informações para o meu banco de dados.A annotation @RequestBody
+		 	pega a Body (o que vem no corpo da requisição)
+			 */
+		return temaRepository.findById(id)
+					.map(subject -> {
+						subject.setId(id);
+						subject.setDescricao(tema.getDescricao());
+						return ResponseEntity.ok(subject);})
+					.orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
 		}
 		
-		@DeleteMapping ("/{id}")
-		public void delete(@PathVariable Long id) {
-			repository.deleteById(id);
+		@DeleteMapping("/{id}")
+		public ResponseEntity<?> deletaTema(@PathVariable Long id) {
+			return temaRepository.findById(id)
+					.map(subject -> {
+						temaRepository.deleteById(id);
+						return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+					})
+					.orElse(ResponseEntity.notFound().build());
 		}
 		
 }

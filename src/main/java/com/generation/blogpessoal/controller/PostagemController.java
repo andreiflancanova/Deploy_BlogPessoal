@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.generation.blogpessoal.model.Postagem;
 import com.generation.blogpessoal.repository.PostagemRepository;
+import com.generation.blogpessoal.repository.TemaRepository;
 
 /*
  	@RestController serve para configurar essa classe como classe 
@@ -46,7 +47,7 @@ import com.generation.blogpessoal.repository.PostagemRepository;
   	Cria um Endpoint (O "/" a gente coloca para fazer a separação da url)
  	Aqui NÃO PODE COLOCAR Letra maiúscula ou espaço
  */
-@RequestMapping("/postagens")
+@RequestMapping("/posts")
 public class PostagemController {
 /*
  	Endpoints são caminhos que vão levar o meu programa a executar
@@ -66,8 +67,10 @@ public class PostagemController {
 	private PostagemRepository postagemRepository;
 	//Colocando private só funciona dentro do PostagemController
 	
+	@Autowired
+	private TemaRepository temaRepository;
 	
-	@GetMapping
+	@GetMapping("/all")
 	public ResponseEntity<List<Postagem>> buscaPostagem(){
 		return ResponseEntity.ok(postagemRepository.findAll());
 	/*
@@ -104,6 +107,8 @@ public class PostagemController {
 				//Método Option: Map e Função Lambda: resposta
 				//Retorna um objeto do tipo Postagem
 				.map(resposta -> ResponseEntity.ok(resposta))
+					//O map aqui converte o objeto resposta em ResponseEntity
+				
 				//Retorna um "Not Found" no código do Postman se não houver nada
 				.orElse(ResponseEntity.notFound().build());
 				
@@ -131,24 +136,47 @@ public class PostagemController {
 	 	informações para o meu banco de dados.A annotation @RequestBody
 	 	pega a Body (o que vem no corpo da requisição)
 	*/
-		return ResponseEntity.status(HttpStatus.CREATED).body(postagemRepository.save(postagem));
+		if (temaRepository.existsById(postagem.getTema().getId()))
+			return ResponseEntity.status(HttpStatus.CREATED).body(postagemRepository.save(postagem));
+		
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 	}
 	
-	@PutMapping
-	public ResponseEntity<Postagem> atualizaPostagem(@Valid @RequestBody Postagem postagem){
-	/*
+	@PutMapping ("/{id}")
+	public ResponseEntity<Postagem> atualizaPostagem(@PathVariable Long id, @Valid @RequestBody  Postagem postagem){
+		/*
 	 	Quando se fala de Post, temos, obrigatoriamente, que enviar
 	 	informações para o meu banco de dados.A annotation @RequestBody
 	 	pega a Body (o que vem no corpo da requisição)
-	*/
-		return ResponseEntity.status(HttpStatus.OK).body(postagemRepository.save(postagem));
+		 */
+
+		if (postagemRepository.existsById(id)){
+			if (temaRepository.existsById(postagem.getTema().getId())){
+				return postagemRepository.findById(id)
+						.map(post -> {
+							post.setId(id);
+							post.setTitulo(postagem.getTitulo());
+							post.setTexto(postagem.getTexto());
+							post.setData(postagem.getData());
+							post.setTema(postagem.getTema());
+							post.setUsuario(postagem.getUsuario());
+							return ResponseEntity.ok(post);})
+						.orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+			}
+		}
+		return 	ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 	}
 	
 	/*
 	  	O nome das chaves {} é "Interpolação" ou "Template Literal"
 	 */
 	@DeleteMapping("/{id}")
-	public void deletaPostagem(@PathVariable long id) {
-		postagemRepository.deleteById(id);
+public ResponseEntity<?> deletePostagem(@PathVariable Long id) {
+	return postagemRepository.findById(id)
+			.map(resposta -> {
+				postagemRepository.deleteById(id);
+				return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+			})
+			.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
 	}
 }

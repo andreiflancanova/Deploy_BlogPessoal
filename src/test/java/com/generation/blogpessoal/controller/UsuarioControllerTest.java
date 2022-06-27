@@ -71,7 +71,7 @@ public class UsuarioControllerTest {
 		 * 	um objeto da classe HttpEntity. */
 
 		ResponseEntity<Usuario> corpoResposta = testRestTemplate.exchange
-				("/usuarios/cadastrar",HttpMethod.POST,corpoRequisicao,Usuario.class);
+				("/users/register",HttpMethod.POST,corpoRequisicao,Usuario.class);
 		/*	Cria o objeto "corpoResposta" da Classe Response Entity, que recebe a resposta da Requisição
 		 *  realizada pelo Objeto da Classe TestRestTemplate. */
 
@@ -96,19 +96,20 @@ public class UsuarioControllerTest {
 	@Order(2)
 	@DisplayName("Não deve permitir duplicação de usuário")
 	public void naoDeveDuplicarUsuario() {
-		usuarioService.CadastrarUsuario(new Usuario(0L,"Paulo Antunes",
+		usuarioService.cadastrarUsuario(new Usuario(0L,"Paulo Antunes",
 				"paulo@gmail.com","1234567890","https://i.imgur.com/FETvs20.jpg"));
 		/*	Persiste um objeto da Classe Usuario no Banco de dados através do
 		 * 	Objeto da Classe UsuarioService. */
 
-		HttpEntity<Usuario> corpoRequisicao = new HttpEntity<Usuario>
-		(new Usuario(0L,"Manuela da Silva","manuela@gmail.com","1234567890","https://i.imgur.com/h4t8loa.jpg"));
+		HttpEntity<Usuario> corpoRequisicao = new HttpEntity<Usuario>(
+		new Usuario(0L,"Paulo Antunes",
+				"paulo@gmail.com","1234567890","https://i.imgur.com/FETvs20.jpg"));
 		/* Cria o mesmo objeto da Classe Usuario que foi persistido no Banco de dados
 		 * na linha anterior para simular uma duplicação de usuário e insere dentro de
 		 * um Objeto da Classe HttpEntity (Entidade HTTP). */
 
 		ResponseEntity<Usuario> corpoResposta = testRestTemplate
-				.exchange("/usuarios/cadastrar",HttpMethod.POST,corpoRequisicao,Usuario.class);
+				.exchange("/users/register",HttpMethod.POST,corpoRequisicao,Usuario.class);
 		/* Cria um Objeto da Classe ResponseEntity (corpoResposta), que receberá a
 		 * Resposta da Requisição que será enviada pelo Objeto da Classe TestRestTemplate.
 		 * Na requisição HTTP será enviada a URL do recurso (/usuarios/cadastrar),
@@ -125,7 +126,7 @@ public class UsuarioControllerTest {
 	@Order(3)
 	@DisplayName("Atualizar um usuário")
 	public void deveAtualizarUmUsuario() {
-		Optional<Usuario> usuarioCadastrado = usuarioService.CadastrarUsuario(
+		Optional<Usuario> usuarioCadastrado = usuarioService.cadastrarUsuario(
 				new Usuario(0L,"Juliana Andreia","juliana_andreia@gmail.com",
 						"j1234567890","https://i.imgur.com/h4t8loa.jpg"));
 		
@@ -158,7 +159,7 @@ public class UsuarioControllerTest {
 				 * 	Usuário: root |	Senha: root	 */
 				
 				
-				.exchange("/usuarios/atualizar", HttpMethod.PUT, corpoRequisicao, Usuario.class);
+				.exchange("/users/update", HttpMethod.PUT, corpoRequisicao, Usuario.class);
 				/*	Na requisição HTTP será enviada a URL do recurso (/usuarios/atualizar),
 				 *  o verbo (PUT), a entidade HTTP criada acima (corpoRequisicao) e a Classe
 				 *  de retornos da Resposta (Usuario).	 */
@@ -184,11 +185,11 @@ public class UsuarioControllerTest {
 	public void deveMostrarTodosUsuarios() {
 		/*	Persistir 02 objetos diferentes da Classe Usuario BD
 		 *  através de Objetos da Classe UsuarioService. */
-		usuarioService.CadastrarUsuario(
+		usuarioService.cadastrarUsuario(
 		new Usuario(0L, "Sabrina Menezes", "sabrina_menezes@gmail.com",
 				"sabrina123", "https://i.imgur.com/5M2p5Wb.jpg"));
 		
-		usuarioService.CadastrarUsuario(
+		usuarioService.cadastrarUsuario(
 		new Usuario(0L, "Ricardo Marques", "ricardo.marques@hotmail.com", 
 				"ricardo123", "https://i.imgur.com/Sk5SjWE.jpg"));
 		
@@ -199,7 +200,7 @@ public class UsuarioControllerTest {
 		
 				.withBasicAuth("root", "root")
 				//Credenciais de acesso ao BD
-				.exchange("/usuarios", HttpMethod.GET, null, String.class);
+				.exchange("/users/all", HttpMethod.GET, null, String.class);
 		
 		assertEquals(HttpStatus.OK, corpoResposta.getStatusCode());
 		/*	Verifica se a requisição retornou o Status Code OK (200). 
@@ -210,7 +211,7 @@ public class UsuarioControllerTest {
 	@Order(5)
 	@DisplayName("Listar Um Usuário Específico")
 	public void deveListarApenasUmUsuario() {
-		Optional<Usuario> usuarioBusca = usuarioService.CadastrarUsuario(
+		Optional<Usuario> usuarioBusca = usuarioService.cadastrarUsuario(
 		new Usuario(0L,"Laura Santana", "laura.santana@hotmail.com", 
 				"laura12345", "https://i.imgur.com/EcJG8kB.jpg"));
 		
@@ -218,7 +219,7 @@ public class UsuarioControllerTest {
 				
 				.withBasicAuth("root", "root")
 				
-				.exchange("/usuarios/" + usuarioBusca
+				.exchange("/users/" + usuarioBusca
 				.get().getId(), HttpMethod.GET, null, String.class);
 		
 		assertEquals(HttpStatus.OK, resposta.getStatusCode());
@@ -230,7 +231,7 @@ public class UsuarioControllerTest {
 	@Order(6)
 	@DisplayName("Login do Usuário")
 	public void deveAutenticarUsuario() {
-		usuarioService.CadastrarUsuario(
+		usuarioService.cadastrarUsuario(
 		new Usuario(0L, "Marilza Souza", "marilza.souza@gmail.com",
 				"13465278", "https://i.imgur.com/T12NIp9.jpg"));
 		
@@ -238,7 +239,7 @@ public class UsuarioControllerTest {
 		new UserLogin(0L, "Marilza Souza", "marilza.souza@gmail.com", "13465278","",""));
 		
 		ResponseEntity<UserLogin> corpoResposta = testRestTemplate
-				.exchange("/usuarios/logar", HttpMethod.POST, corpoRequisicao, UserLogin.class);
+				.exchange("/users/login", HttpMethod.POST, corpoRequisicao, UserLogin.class);
 		
 		assertEquals(HttpStatus.OK, corpoResposta.getStatusCode());
 	}

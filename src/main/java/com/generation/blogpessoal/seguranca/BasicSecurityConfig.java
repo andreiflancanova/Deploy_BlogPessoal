@@ -46,8 +46,8 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter{
 		 *  Controller sem precisar passar uma chave do tipo Token.
 		 *  Usamos isso tanto para logar quanto para cadastrar um
 		 *  novo usuário.	*/
-		.antMatchers("/usuarios/logar").permitAll()
-		.antMatchers("/usuarios/cadastrar").permitAll()
+		.antMatchers("/users/login").permitAll()
+		.antMatchers("/users/register").permitAll()
 		
 		/* 	Especifica que as demais requisições deverão ser autenticadas.
 		 	(Para o Header, terá que ser passada a chave)	*/
