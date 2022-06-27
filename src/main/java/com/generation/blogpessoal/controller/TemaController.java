@@ -61,20 +61,20 @@ public class TemaController {
 	}
 	
 	//Criar uma sub-rota para busca pela descrição
-		@GetMapping ("/description/{descricao}")
+		@GetMapping ("/description/{description}")
 		/*
 		 	Quando usamos a anotação @PathVariable, estamos fazendo ela pegar o valor
 		 	diretamente pela URL.
 		*/
 		
-		public ResponseEntity<List<Tema>> getByDescription(@PathVariable String descricao){
+		public ResponseEntity<List<Tema>> getByDescription(@PathVariable String description){
 			/*
 			 	Este método faz o seguinte:
 			 	1) Se a URL no Front-End (Postman) contiver o /nome, acessa ele;
 			 	2) Usa o findAllByDescricao para trazer a entrada do BD correspondente
 			 	a este ID;
 			 */
-			return ResponseEntity.ok(temaRepository.findAllByDescricaoContainingIgnoreCase(descricao));
+			return ResponseEntity.ok(temaRepository.findAllByDescricaoContainingIgnoreCase(description));
 		}
 		
 		@PostMapping
