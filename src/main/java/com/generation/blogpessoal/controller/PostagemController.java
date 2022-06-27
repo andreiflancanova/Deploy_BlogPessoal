@@ -123,9 +123,9 @@ public class PostagemController {
 	 	um atributo e não o nome em si.
 	 	
 	 */
-	@GetMapping("/titulo/{titulo}")
-	public ResponseEntity<List<Postagem>> buscaPostagemPorTitulo(@PathVariable String titulo){
-		return ResponseEntity.ok(postagemRepository.findAllByTituloContainingIgnoreCase(titulo));
+	@GetMapping("/title/{title}")
+	public ResponseEntity<List<Postagem>> buscaPostagemPorTitulo(@PathVariable String title){
+		return ResponseEntity.ok(postagemRepository.findAllByTituloContainingIgnoreCase(title));
 	}
 	
 	
